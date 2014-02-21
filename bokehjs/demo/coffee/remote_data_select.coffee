@@ -17,7 +17,8 @@ window.render_trader_plot = (Bokeh, api_endpoint, plot_title, plot_div, selector
 
   options = {
     dims: [700, 600], xrange: xdr, yrange: ydr1, title: plot_title
-    xaxes: false, yaxes: false, legend:true,
+    xaxes: false, yaxes: false,
+    legend:false,
     tools: false}
 
   
@@ -37,6 +38,16 @@ window.render_trader_plot = (Bokeh, api_endpoint, plot_title, plot_div, selector
 
 
   plot1.add_renderers([x_axis.ref(), y_axis.ref()])
+  legend_renderer = Bokeh.Legend.Collection.create({
+    parent: plot1.ref()
+    plot: plot1.ref()
+    orientation: "top_right"
+    border_line_width:0
+    border_line_alpha:0
+    label_text_alpha:.5
+    legends: {}
+  })
+  plot1.add_renderers([legend_renderer.ref()])
 
   remote_data_select_tool = Bokeh.Collections('RemoteDataSelectTool').create(
     control_el:selector_div,
