@@ -60,7 +60,7 @@ window.render_trader_plot = (Bokeh, api_endpoint, plot_title, plot_div, selector
   Bokeh.Plotting.show(plot1, $(plot_div))
 
   console.log(remote_data_select_tool)
-  return remote_data_select_tool
+  return plot1, remote_data_select_tool
 
 if require?
   require(['main'], (Bokeh) ->
