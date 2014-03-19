@@ -131,12 +131,30 @@ define [
         x_min = Math.min.apply(data.index, data.index)
         x_max = Math.max.apply(data.index, data.index)
 
+  
+        
         y_min = Math.min.apply(data[renderer_name], data[renderer_name])
         y_max = Math.max.apply(data[renderer_name], data[renderer_name])
 
         y_min2 = Math.min(y_range.get('min'), y_min)
         y_max2 = Math.max(y_range.get('max'), y_max)
+        if y_min2 == y_max2
+          if y_min2 == 0
+            [y_min2, y_max2] = [-1, 1]
+          else
+            [y_min2, y_max2] = [(y_min2 * .75), (y_max2 * 1.25)]
+  
+        if x_min == x_max
+          if x_min == 0
+            [x_min, x_max] = [-1, 1]
+          else
+            [x_min, x_max] = [(x_min * .75), (x_max * 1.25)]
+  
+        #[x_min, x_max] = [0,0]
+        #[y_min2, y_max2] = [0,0]
 
+        console.log("xmin, xmax", x_min, x_max);
+        console.log("y_min2, y_max2", y_min2, y_max2);
         pview.update_range({
           xr: {start: x_min, end: x_max },
           yr: {start: y_min2, end: y_max2}})
