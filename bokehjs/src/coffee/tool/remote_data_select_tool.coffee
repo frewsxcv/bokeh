@@ -25,7 +25,7 @@ define [
 
       new_cols = []
       for c in  @mget_obj('data_source').get('columns')
-        new_cols.push({colName:c, renderered:false, colDisplayName:c})
+        new_cols.push({colName:c, rendered:false, colDisplayName:c})
       @mset('columns', new_cols)
       @render()
 
@@ -76,9 +76,13 @@ define [
             gspecs =  @model.get('glyph_specs')
             gspec_pointer = @model.get('glyph_spec_pointer')
             @inc_glyph_spec_pointer()
-            #@_add_renderer(colName, gspecs)
-            @_add_renderer(colName, _.defaults({}, gspecs, {type:'line'}))
-            #@_add_renderer(colName, _.defaults({}, gspecs, {type:'rects'}))
+            if col.gspec?
+              base_gspec = col.gspec
+            else
+              gspecs =  @model.get('glyph_specs')
+              gspec_pointer = @model.get('glyph_spec_pointer')
+              base_gspec = gspecs[gspec_pointer]
+            @_add_renderer(colName, base_gspec)
           
           else
             @unrender_column(colName)
@@ -106,32 +110,27 @@ define [
         for r in renderers
           @unrender_(r)
 
-    _add_renderer: (renderer_name, glyph_specs) ->
+    _add_renderer: (renderer_name, base_glyph_specs) ->
       Plotting = require("common/plotting")
       pview = @plot_view
       pmodel = @plot_view.model
       data_source = @model.get_obj('data_source')
       x_range = pmodel.get_obj("x_range")
       y_range = pmodel.get_obj("y_range")
-      gspecs =  @model.get('glyph_specs')
-      gspec_pointer = @model.get('glyph_spec_pointer')
+
+      
+      
       data_source.remote_add_column(renderer_name, =>
         data = data_source.get('data')
 
-        scatter2 = gspecs[gspec_pointer]
-        scatter2.x = 'index'
-        scatter2.y = renderer_name
+        scatter3 = _.extend({}, _.clone(base_glyph_specs),  {'x':'index', 'y':renderer_name,  type:'line'});
+        glyphs = Plotting.create_glyphs(pmodel, scatter3, [data_source])
 
-        orig_glyphs = Plotting.create_glyphs(pmodel, scatter2, [data_source])
-        console.log(glyphs)
-        glyphs = orig_glyphs.concat(Plotting.create_glyphs(pmodel, _.extend({}, scatter2, {type:'line'}), [data_source]))
         pmodel.add_renderers(g.ref() for g in glyphs)
 
 
         x_min = Math.min.apply(data.index, data.index)
         x_max = Math.max.apply(data.index, data.index)
-
-  
         
         y_min = Math.min.apply(data[renderer_name], data[renderer_name])
         y_max = Math.max.apply(data[renderer_name], data[renderer_name])
@@ -150,11 +149,7 @@ define [
           else
             [x_min, x_max] = [(x_min * .75), (x_max * 1.25)]
   
-        #[x_min, x_max] = [0,0]
-        #[y_min2, y_max2] = [0,0]
 
-        console.log("xmin, xmax", x_min, x_max);
-        console.log("y_min2, y_max2", y_min2, y_max2);
         pview.update_range({
           xr: {start: x_min, end: x_max },
           yr: {start: y_min2, end: y_max2}})
